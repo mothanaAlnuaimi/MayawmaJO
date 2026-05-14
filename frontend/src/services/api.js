@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const API_BASE = '/api';
+const API_BASE = '/https://mayawmajo.onrender.com/api';
 
 // Create axios instance
 const api = axios.create({

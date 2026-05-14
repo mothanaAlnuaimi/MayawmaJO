@@ -188,6 +188,6 @@ app.get('/api/health', (req, res) => {
 
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
-  console.log(`🚀 Forsati server running on http://localhost:${PORT}`);
+  console.log(`🚀 Mayawma server running on port ${PORT}`);
   console.log(`📧 Check email: http://localhost:${PORT}/api/auth/check-email?email=test@example.com`);
 });
