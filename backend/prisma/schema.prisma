@@ -1,0 +1,127 @@
+// This is your Prisma schema file
+// Learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id           Int      @id @default(autoincrement())
+  fullName     String
+  email        String   @unique
+  phone        String?
+  passwordHash String
+  role         String   @default("JOB_SEEKER") // JOB_SEEKER, EMPLOYER, ADMIN
+  city         String?
+  avatar       String?
+  rating       Float    @default(0)
+  trustScore   Int      @default(50)
+  isVerified   Boolean  @default(false)
+  isBlocked    Boolean  @default(false)
+  createdAt    DateTime @default(now())
+
+  jobSeekerProfile JobSeekerProfile?
+  employerProfile  EmployerProfile?
+  jobs             Job[]
+  applications     Application[]
+  reviewsGiven     Review[] @relation("ReviewerRelation")
+  reviewsReceived  Review[] @relation("ReviewedRelation")
+  reports          Report[]
+  notifications    Notification[]
+}
+
+model JobSeekerProfile {
+  id               Int    @id @default(autoincrement())
+  userId           Int    @unique
+  user             User   @relation(fields: [userId], references: [id])
+  skills           String @default("[]") // JSON array as string
+  availability     String @default("[]") // JSON array
+  preferredJobTypes String @default("[]") // JSON array
+  completedJobs    Int    @default(0)
+  bio              String?
+}
+
+model EmployerProfile {
+  id                      Int    @id @default(autoincrement())
+  userId                  Int    @unique
+  user                    User   @relation(fields: [userId], references: [id])
+  businessName            String
+  businessType            String?
+  location                String?
+  verifiedDocumentsStatus String @default("PENDING") // PENDING, APPROVED, REJECTED
+}
+
+model Job {
+  id            Int      @id @default(autoincrement())
+  employerId    Int
+  employer      User     @relation(fields: [employerId], references: [id])
+  title         String
+  category      String
+  description   String
+  requirements  String?
+  city          String
+  area          String?
+  date          String
+  startTime     String
+  endTime       String
+  payment       Float
+  workersNeeded Int      @default(1)
+  status        String   @default("OPEN") // OPEN, CLOSED, BLOCKED
+  isVerified    Boolean  @default(false)
+  riskScore     Int      @default(0)
+  createdAt     DateTime @default(now())
+
+  applications Application[]
+  reviews      Review[]
+  reports      Report[]
+}
+
+model Application {
+  id        Int      @id @default(autoincrement())
+  jobId     Int
+  job       Job      @relation(fields: [jobId], references: [id])
+  seekerId  Int
+  seeker    User     @relation(fields: [seekerId], references: [id])
+  status    String   @default("PENDING") // PENDING, ACCEPTED, REJECTED
+  createdAt DateTime @default(now())
+}
+
+model Review {
+  id             Int      @id @default(autoincrement())
+  reviewerId     Int
+  reviewer       User     @relation("ReviewerRelation", fields: [reviewerId], references: [id])
+  reviewedUserId Int
+  reviewedUser   User     @relation("ReviewedRelation", fields: [reviewedUserId], references: [id])
+  jobId          Int
+  job            Job      @relation(fields: [jobId], references: [id])
+  rating         Int
+  comment        String?
+  createdAt      DateTime @default(now())
+}
+
+model Report {
+  id         Int      @id @default(autoincrement())
+  reporterId Int
+  reporter   User     @relation(fields: [reporterId], references: [id])
+  jobId      Int
+  job        Job      @relation(fields: [jobId], references: [id])
+  reason     String
+  status     String   @default("OPEN") // OPEN, REVIEWED, RESOLVED
+  createdAt  DateTime @default(now())
+}
+
+model Notification {
+  id        Int      @id @default(autoincrement())
+  userId    Int
+  user      User     @relation(fields: [userId], references: [id])
+  title     String
+  message   String
+  type      String   @default("INFO")
+  isRead    Boolean  @default(false)
+  createdAt DateTime @default(now())
+}
